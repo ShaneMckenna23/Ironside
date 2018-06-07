@@ -1,0 +1,103 @@
+<html><script>(function installFakeGeolocationCode() {
+    var timerId = null;
+    if (!navigator.geolocation) {
+        return;
+    }
+    navigator.geolocation.getCurrentPosition_ = navigator.geolocation.getCurrentPosition;
+    navigator.geolocation.watchPosition_ = navigator.geolocation.watchPosition;
+    navigator.geolocation.clearWatch_ = navigator.geolocation.clearWatch;
+
+    navigator.geolocation.clearWatch = function (id) {
+        window.clearInterval(id);
+    };
+
+    function sendBackResponse (successCb, errorCb, options, jsonedResponse) {
+        var response = JSON.parse(jsonedResponse);
+        if (response.isEnabled) {
+            successCb({ 'coords': { 'latitude': response.lat, 'longitude': response.lng,
+                'accuracy': response.accuracy }, 'timestamp': new Date().getTime() });
+        } else {
+            navigator.geolocation.getCurrentPosition_(successCb, errorCb, options);
+        }
+    }
+
+    function createGetFakePosition(successCb, errorCb, options) {
+        return function () {
+            var positionElement = document.getElementById('fake_position_meta');
+            if (!positionElement) {
+                var interval = setInterval(function() {
+                    positionElement = document.getElementById('fake_position_meta');
+                    if (positionElement) {
+                        clearInterval(interval);
+                        sendBackResponse(successCb, errorCb, options, positionElement.getAttribute('content'));
+                    }
+                }, 200 /* ms */);
+            } else {
+                // we already have the div, no need for intervals etc.
+                sendBackResponse(successCb, errorCb, options, positionElement.getAttribute('content'));
+            }
+        };
+    };
+
+    navigator.geolocation.getCurrentPosition = function (cb1, cb2, options) {
+        var getFakePosition = createGetFakePosition(cb1, cb2, options);
+        getFakePosition();
+    };
+
+    navigator.geolocation.watchPosition = function (cb1, cb2, options) {
+        var getFakePosition = createGetFakePosition(cb1, cb2, options);
+        getFakePosition();
+        if (timerId) {
+            window.clearInterval(timerId);
+        }
+        timerId = window.setInterval(getFakePosition, 5 * 1000);
+        return timerId;
+    };
+})();</script><head>
+<meta charset="UTF-8">
+<meta http-equiv="X-UA-Compatible" content="IE=Edge">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="canonical" href="http://baysidelanding.com/delivery">
+<title>Bayside Landing San Diego</title>
+<link href="http://baysidelanding.com/bootstrap/css/bootstrap.min.css" type="text/css" rel="stylesheet">
+<link href="http://baysidelanding.com/css/style.css" type="text/css" rel="stylesheet">
+<!--script src="http://baysidelanding.com/js/jquery.min.js"></script-->
+</head>
+
+<body>
+<div id="bodycontainer" class="container">
+<div id="header" class="text-center">
+    <div id="logo">
+        <a href="http://baysidelanding.com"><img src="images/BSL_Logo.png" alt=""></a>
+    </div>
+</div>
+<div id="main-content" class="text-center">
+    <div id="delivery-order">
+        <iframe id="delivmenu" src="https://www.bringittome.com/embed.php/order/restaurant/124?REF=BAYSIDE&amp;LIMITRR=124" frameborder="0" width="100%" height="3800"></iframe>
+        <p>Online Menu Ordering by Seamless Menus a Product of <a href="https://www.bigtreesolutions.com" target="_blank">BigTree Solutions</a></p>
+    </div>
+    
+    <div id="thebuttons">
+        <a href="menus/Bayside_BrunchMenu.pdf" target="_blank" class="button bpill">BRUNCH</a>
+        <a href="menus/Bayside_Dinner_Menu.pdf" target="_blank" class="button bpill">EATS</a>
+        <a href="menus/Bayside_DrinkMenu.pdf" target="_blank" class="button bpill breakpoint">DRINKS</a>
+        <a href="/delivery" class="button bpill">DELIVERY</a>
+        <a href="/contact" class="button bpill">CONTACT US</a>
+    </div>
+</div>
+
+<div id="footer" class="text-center">
+    <div class="constantiafont">Hours of Operation:&nbsp;Monday&nbsp;-&nbsp;Thursday 11am - 10pm&nbsp;| Friday 11am - 12am |&nbsp;Saturday&nbsp;9am - 12am | &nbsp;Sunday 9am - 10pm<br>
+    </div>
+          
+    <div style="font-family: Constantia, 'Lucida Bright', 'DejaVu Serif', Georgia, serif">3780 Ingraham St, San Diego, CA, 92109  |  Phone #: 858.270.9200</div>
+          
+    <div class="constantiafont facebake"><a href="https://www.facebook.com/Baysidelanding" target="new"><img src="images/fb.png" width="20" height="20" alt=""></a></div>
+    
+    <div id="footer-image" class="constantiafont text-left"><img src="images/oceanfriendly.png" width="100" height="100" alt=""></div>
+</div> 
+</div><!--END CONTAINER -->   
+
+
+
+<meta id="fake_position_meta" name="fake_geolocation_chrome_extension" content="{&quot;isEnabled&quot;:true,&quot;lat&quot;:35.967554314720566,&quot;lng&quot;:-118.28674440099138,&quot;accuracy&quot;:100}"></body></html>

@@ -256,9 +256,9 @@ function initializeMap() {
 
         ],
 
-        lat = 32.722777,
-        lng = -117.168609,
-
+        lat = 32.788433,
+        lng = -117.237572,
+    
 
 
         customMap = new google.maps.StyledMapType(styles, {
